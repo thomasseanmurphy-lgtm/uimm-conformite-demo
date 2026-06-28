@@ -8,19 +8,26 @@
 <title>Conformité Prestataires — Pôle Formation UIMM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Sans:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Sans:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --sans:"Instrument Sans",system-ui,-apple-system,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
   --display:"Instrument Serif",Georgia,serif;
+  --title:"Spectral","Georgia",serif; /* masthead charpenté (provisoire — swap trivial du token) */
+  --chronic:var(--sans); /* typo des lignes « Retards chroniques » (Data) — bascule triviale ; reco = Instrument Sans comme le registre */
   --paper:#f4efe6; --paper-2:#efe8db; --card:#fbf8f3; --card-hi:#ffffff; --warm:#faf6ef;
+  /* Retards chroniques (Data) — deux fonds nettement séparés, gamme beige+blanc, texte navy.
+     Swap trivial pour « trouver la palette » : alternatives band = #ece0c9 (plus crémeux) ou #e3d6bb (plus kraft). */
+  --retard-band:#efe8d9;   /* bande de contexte : beige clair SUBTIL, à peine plus chaud que la fiche blanche (distinction nette mais discrète, pas de sable kraft) */
+  --retard-fiche:#ffffff;  /* fiche prestataire : blanc pur — lit « fiche = blanc » DÈS LE REPOS, sans dépendre du hover */
   --ink:#272320; --ink-soft:#5c574f; --ink-faint:#8a8275;
   --rule:#e6ddcd; --rule-strong:#cdbfa6; --gold:#a8854a;
   --navy:#1e2b4a; --rose:#ffc9d2; --rose-deep:#e8949f; --rose-strong:#c45d6e; --rose-mute:#f0b9c2;
   --emerald:#2f8a63; --emerald-bg:#e6f0ea; --emerald-line:#bcd6c4;
   --amber:#c08a2e; --amber-bg:#f5edd8; --amber-line:#e3d2a6;
-  --red:#c44b3c; --red-bg:#f5e2dd; --red-line:#e2c3b8;
+  --red:#c81d77; --red-bg:#f7dde9; --red-line:#ecb9d2; /* NON-CONFORMITÉ = fuchsia soutenu (famille rose) — vif, chic, jamais néon */
+  --danger:#9c3149; /* boutons d'ACTION « danger » (Suspendre l'auto / Traiter l'escalade) — bordeaux sobre, distinct du statut fuchsia */
   --shadow-sm:0 1px 2px rgba(39,35,32,.05);
   --shadow:0 2px 6px rgba(39,35,32,.05), 0 16px 32px -22px rgba(39,35,32,.30);
   --shadow-lift:0 6px 16px rgba(39,35,32,.09), 0 30px 60px -28px rgba(39,35,32,.45);
@@ -49,7 +56,7 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .masthead{padding:14px 0 30px}
 .masthead .kicker{margin-top:14px}
 .kicker span{font-family:var(--mono); font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--navy); background:var(--rose); padding:5px 10px 4px; border-radius:3px}
-.bigtitle{font-family:var(--display); font-weight:400; color:var(--ink); font-size:clamp(40px,5.2vw,62px); line-height:1.02; letter-spacing:-.5px}
+.bigtitle{font-family:var(--title); font-weight:600; font-optical-sizing:auto; color:var(--ink); font-size:clamp(40px,5.2vw,62px); line-height:1.03; letter-spacing:-.5px}
 .masthead .sub{font-size:13px; color:var(--ink-faint); margin-top:12px}
 .who{display:flex; align-items:center; gap:10px; color:var(--ink-soft); font-size:13.5px}
 .who .av{width:32px;height:32px;border-radius:50%; background:var(--gold); color:#fff; display:grid; place-items:center; font-weight:600; font-size:12.5px}
@@ -79,9 +86,13 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .kpi.active{border-color:var(--rose-deep); box-shadow:var(--shadow-lift)}
 .kpi.active::after{content:""; position:absolute; left:18px; right:18px; bottom:0; height:3px; background:var(--rose); border-radius:3px}
 
-/* section header */
-.section-h{display:flex; align-items:center; gap:14px; margin:0 2px 14px}
-.section-h h2{font-size:21px}
+/* section header — aligné sur le langage des sections Data (.dblock h3 + .bsub) */
+.section-h{display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap; margin:0 2px 14px}
+.section-h .section-head{min-width:0}
+.section-h h2{font-family:var(--display); font-weight:400; font-size:23px; letter-spacing:-.3px; line-height:1.05; margin:0 0 3px}
+.section-h .bsub{font-size:12.5px; color:var(--ink-faint); margin:0}
+.section-h .section-ctrl{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.section-h .section-ctrl .search{margin-left:0}
 .search{margin-left:auto; width:270px; max-width:42vw; font-family:var(--sans); font-size:13.5px; color:var(--ink);
   background:transparent no-repeat left 2px center; border:none; border-bottom:1px solid var(--rule-strong); padding:8px 6px 8px 26px;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%238a8275' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
@@ -149,10 +160,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .btn[data-validate]{display:none}
 .fiche-mode{margin-right:auto}
 .fiche-mode button{min-width:88px; font-size:11px; padding:5px 11px}
-.piece .pdot{width:8px;height:8px;border-radius:50%; flex:0 0 auto}
-.piece .pdot.green{background:var(--emerald)} .piece .pdot.amber{background:var(--amber)} .piece .pdot.red{background:var(--red)}
 .piece .pn{font-size:13.5px; font-weight:500; flex:1}
-.piece .pd{font-size:12px; color:var(--ink-faint)}
+/* statut de pièce sans pastille : porté par la couleur + graisse du texte .pd */
+.piece .pd{font-size:12px; font-weight:500; color:var(--ink-faint)}
+.piece .pd.green{color:var(--emerald)} .piece .pd.amber{color:var(--amber)} .piece .pd.red{color:var(--red)}
 .piece.validating{animation:flash .8s var(--ease)}
 .side .blk{background:var(--card); border:1px solid var(--rule); border-radius:var(--r-sm); padding:13px 15px; margin-bottom:10px}
 .side .bt{font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px}
@@ -176,7 +187,7 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .btn.line:hover{transform:translateY(-1px); box-shadow:var(--shadow-sm)}
 .btn.ghost{background:none; border:none; color:var(--ink-soft); padding:6px 0; border-bottom:1px solid transparent}
 .btn.ghost:hover{color:var(--ink); border-bottom-color:var(--rule-strong)}
-.btn.ghost.danger{color:var(--red)}
+.btn.ghost.danger{color:var(--danger)}
 .manual-only{display:none}
 .detail.manual .manual-only{display:inline-block}
 
@@ -245,8 +256,8 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .chronic:last-child{border-bottom:none}
 .chronic .who{font-size:14px; font-weight:600}
 .chronic .who small{display:block; color:var(--ink-faint); font-weight:400; font-size:12px}
-.chronic .met{font-family:var(--mono); font-size:12.5px; color:var(--ink-soft)}
-.chronic .sug{font-size:12.5px; color:var(--navy); font-weight:600; justify-self:start}
+.chronic .met{font-family:var(--chronic); font-variant-numeric:tabular-nums; font-size:12.5px; color:var(--ink-soft)}
+.chronic .sug{font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--navy); justify-self:start}
 .two{display:grid; grid-template-columns:1fr 1fr; gap:18px}
 .two .dblock{margin-bottom:0}
 .bigstat{font-family:"Geist",var(--sans); font-weight:600; color:var(--navy); font-size:34px; letter-spacing:-1px; margin-top:6px}
@@ -262,12 +273,17 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .matrow{display:grid; grid-template-columns:1.6fr 1.2fr 80px; gap:14px; padding:5px 0; font-size:13px; color:var(--ink-soft)}
 .matrow .mn{color:var(--ink); font-weight:500}
 .matrow .mt{font-family:var(--mono); text-align:right; color:var(--ink)}
+/* bloc Retards : pas de double-carton — le .dblock qui entoure #retards devient transparent
+   (titre + sous-texte au-dessus, comme .section-h au-dessus de .list) ; #retards = carton unique */
+.dblock:has(#retards){background:none; border:none; box-shadow:none; padding:0}
 #retards{background:var(--card); border:1px solid var(--rule); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
-#retards .row{border-top:none}
-.retard-ctx{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; padding:11px 20px 1px; border-top:1px solid var(--rule); font-size:12px}
+#retards .row{border-top:none; background:var(--retard-fiche)} /* fiche = blanc cassé : contraste FRANC avec la bande sable au-dessus */
+.retard-ctx{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; padding:11px 20px 9px; border-top:1px solid var(--rule-strong); font-size:12.5px;
+  background:var(--retard-band)} /* bande de contexte : sable chaud soutenu, nettement plus dense que la fiche blanche → deux zones évidentes */
 #retards .row-head + .retard-ctx{border-top:none}
-.retard-ctx .met{font-family:var(--mono); color:var(--ink-soft)}
-.retard-ctx .sug{color:var(--navy); font-weight:600}
+#retards .retard-ctx + .row{border-top:1px solid var(--rule)} /* filet discret : sépare la bande sable de la fiche blanche dessous (la fiche n'est plus « incluse » dans la bande) */
+.retard-ctx .met{font-family:var(--chronic); font-variant-numeric:tabular-nums; font-size:12.5px; color:rgba(30,43,74,.72)} /* navy adouci (rgba de --navy) : la métrique lit comme note de contexte navy, distincte des gris neutres de l'en-tête (--ink-faint) et de la fiche */
+.retard-ctx .sug{font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--navy)}
 @media (max-width:820px){.data-figs{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
 
 @media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}.kpi,.row{opacity:1 !important; transform:none !important; filter:none !important}}
@@ -309,10 +325,15 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
   </div>
 
   <div class="section-h">
-    <h2>Registre prestataire</h2>
-    <span class="filterflag" id="flag">filtré : <b id="flagname"></b> <span class="x" id="flagx">tout afficher ✕</span></span>
-    <input id="search" class="search" type="search" placeholder="Rechercher un prestataire ou un centre…" autocomplete="off">
-    <button class="btn-new" id="btnNew">+ Nouveau prestataire</button>
+    <div class="section-head">
+      <h2>Registre prestataire</h2>
+      <p class="bsub">Tous les intervenants externes référencés et l'état de conformité de leurs pièces.</p>
+    </div>
+    <div class="section-ctrl">
+      <span class="filterflag" id="flag">filtré : <b id="flagname"></b> <span class="x" id="flagx">tout afficher ✕</span></span>
+      <input id="search" class="search" type="search" placeholder="Rechercher un prestataire ou un centre…" autocomplete="off">
+      <button class="btn-new" id="btnNew">+ Nouveau prestataire</button>
+    </div>
   </div>
   <div class="empty" id="empty" hidden>Aucun prestataire ne correspond.</div>
 
@@ -330,10 +351,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation de vigilance</span><span class="pd">à fournir</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">à fournir</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à fournir</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Copie CNI</span><span class="pd">à fournir</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd red">à fournir</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd red">à fournir</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd red">à fournir</span></div>
+        <div class="piece"><span class="pn">Copie CNI</span><span class="pd red">à fournir</span></div>
       </div>
       <div class="side">
         <div class="blk"><div class="bt">Relances automatiques</div>
@@ -367,10 +388,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation de vigilance</span><span class="pd">expirée 12/04</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">manquante</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation régularité</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd red">expirée 12/04</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd red">manquante</span></div>
+        <div class="piece"><span class="pn">Attestation régularité</span><span class="pd green">à jour</span></div>
       </div>
       <div class="side">
         <div class="blk"><div class="bt">Relances automatiques</div>
@@ -407,10 +428,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">manquante</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot amber"></span><span class="pn">Diplômes</span><span class="pd">à vérifier</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd red">manquante</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Diplômes</span><span class="pd amber">à vérifier</span></div>
       </div>
       <div class="side">
         <div class="blk"><div class="bt">Relances automatiques</div>
@@ -443,10 +464,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot amber"></span><span class="pn">Attestation régularité</span><span class="pd">renouv. 16/07</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation RC Pro</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation régularité</span><span class="pd amber">renouv. 16/07</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd green">à jour</span></div>
       </div>
       <div class="side">
         <div class="blk"><div class="bt">Relances automatiques</div>
@@ -473,10 +494,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation RC Pro</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Copie CNI</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Copie CNI</span><span class="pd green">à jour</span></div>
       </div>
       <div class="side">
         <div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>52 €/h TTC</b></div><div class="finline"><span>Base</span><b>horaire</b></div></div>
@@ -495,10 +516,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation RC Pro</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
-        <div class="piece"><span class="pdot green"></span><span class="pn">Diplômes</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd green">à jour</span></div>
+        <div class="piece"><span class="pn">Diplômes</span><span class="pd green">à jour</span></div>
       </div>
       <div class="side"><div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>500 €/j TTC</b></div></div></div>
       <div class="actions"><span class="auto-note"><span class="spark"></span>Conforme — aucune relance en cours</span><button class="btn gold">Dossier de preuve</button><button class="btn line" data-validate>Valider un document reçu</button></div>
@@ -515,10 +536,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
     </div>
     <div class="detail"><div class="inner"><div class="pad">
       <div class="pieces">
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation de vigilance</span><span class="pd">manquante</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">manquante</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Kbis / SIRENE</span><span class="pd">manquant</span></div>
-        <div class="piece"><span class="pdot red"></span><span class="pn">Copie CNI</span><span class="pd">manquante</span></div>
+        <div class="piece"><span class="pn">Attestation de vigilance</span><span class="pd red">manquante</span></div>
+        <div class="piece"><span class="pn">Attestation RC Pro</span><span class="pd red">manquante</span></div>
+        <div class="piece"><span class="pn">Kbis / SIRENE</span><span class="pd red">manquant</span></div>
+        <div class="piece"><span class="pn">Copie CNI</span><span class="pd red">manquante</span></div>
       </div>
       <div class="side">
         <div class="blk"><div class="bt">Relances automatiques</div>
@@ -759,11 +780,11 @@ document.querySelectorAll('[data-row]').forEach(row=>{
   row.dataset.origrelance=rl.innerHTML; row.dataset.origrelancecls=rl.className;
 });
 function recomputeRow(detail){
-  const dots=[...detail.querySelectorAll('.pdot')];
+  const marks=[...detail.querySelectorAll('.pd')];
   const row=detail.previousElementSibling;
   const sd=row.querySelector('.status-dot'), b=row.querySelector('.badge'), rl=row.querySelector('.relance');
-  const st = dots.some(d=>d.classList.contains('red')) ? 'red'
-           : dots.some(d=>d.classList.contains('amber')) ? 'amber' : 'green';
+  const st = marks.some(d=>d.classList.contains('red')) ? 'red'
+           : marks.some(d=>d.classList.contains('amber')) ? 'amber' : 'green';
   row.dataset.status=st; sd.className='status-dot '+st;
   const map={green:['badge green','En règle'], amber:['badge amber','Bientôt dû'], red:['badge red','Non conforme']};
   b.className=map[st][0]; b.textContent=map[st][1];
@@ -771,17 +792,17 @@ function recomputeRow(detail){
   else { rl.className=row.dataset.origrelancecls; rl.innerHTML=row.dataset.origrelance; }
 }
 function bindPiece(piece){
-  const dot=piece.querySelector('.pdot'), pd=piece.querySelector('.pd');
-  piece.dataset.origdot=[...dot.classList].find(c=>c!=='pdot')||'green';
+  const pd=piece.querySelector('.pd');
+  piece.dataset.origpdcls=[...pd.classList].find(c=>c!=='pd')||'green';
   piece.dataset.origpd=pd.textContent;
   piece.title='Mode Manuel requis pour valider / dévalider';
   piece.addEventListener('click',()=>{
     if(!piece.closest('.detail').classList.contains('manual')) return; // en automatique, c'est l'OCR/le système qui valide
     if(piece.dataset.validated==='1'){
-      dot.className='pdot '+piece.dataset.origdot; pd.textContent=piece.dataset.origpd; piece.dataset.validated='0';
+      pd.className='pd '+piece.dataset.origpdcls; pd.textContent=piece.dataset.origpd; piece.dataset.validated='0';
       const tk=piece.querySelector('.tick'); if(tk) tk.remove();
     } else {
-      dot.className='pdot green'; pd.textContent='validée'; piece.dataset.validated='1';
+      pd.className='pd green'; pd.textContent='validée'; piece.dataset.validated='1';
       piece.classList.remove('validating'); void piece.offsetWidth; piece.classList.add('validating');
       if(!piece.querySelector('.tick')){ const t=document.createElement('span'); t.className='tick'; t.textContent='✓'; piece.appendChild(t); requestAnimationFrame(()=>t.classList.add('show')); }
     }
@@ -822,7 +843,7 @@ const sitesSet=v=>{
 };
 const composeCo=d=>[d.forme,d.specialite].filter(Boolean).join(' · ')+(d.ville?` — ${d.ville}`:'');
 const tarifTxt=d=>d.tarif?`${d.tarif} €/${d.base==='Journalier'?'j':'h'} ${d.httc}`.trim():'—';
-const pieceHTML=(name,note)=>`<div class="piece"><span class="pdot red"></span><span class="pn">${name}</span><span class="pd">${note}</span></div>`;
+const pieceHTML=(name,note)=>`<div class="piece"><span class="pn">${name}</span><span class="pd red">${note}</span></div>`;
 
 function makeRow(d){
   const tmp=document.createElement('div');

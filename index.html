@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maquette — Dashboard Conformité (v4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Sans:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sans:"Instrument Sans",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
+  --display:"Instrument Serif",Georgia,serif;
+  --paper:#f4efe6; --paper-2:#efe8db; --card:#fbf8f3; --card-hi:#ffffff; --warm:#faf6ef;
+  --ink:#272320; --ink-soft:#5c574f; --ink-faint:#8a8275;
+  --rule:#e6ddcd; --rule-strong:#cdbfa6; --gold:#a8854a;
+  --navy:#1e2b4a; --rose:#ffc9d2; --rose-deep:#e8949f; --rose-strong:#c45d6e; --rose-mute:#f0b9c2;
+  --emerald:#2f8a63; --emerald-bg:#e6f0ea; --emerald-line:#bcd6c4;
+  --amber:#c08a2e; --amber-bg:#f5edd8; --amber-line:#e3d2a6;
+  --red:#c44b3c; --red-bg:#f5e2dd; --red-line:#e2c3b8;
+  --shadow-sm:0 1px 2px rgba(39,35,32,.05);
+  --shadow:0 2px 6px rgba(39,35,32,.05), 0 16px 32px -22px rgba(39,35,32,.30);
+  --shadow-lift:0 6px 16px rgba(39,35,32,.09), 0 30px 60px -28px rgba(39,35,32,.45);
+  --r:14px; --r-sm:10px; --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(1100px 560px at 86% -10%, var(--warm) 0%, rgba(250,246,239,0) 60%), var(--paper);
+  color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
+.num,.tarif,.pd,.tnum{font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+.mock-strip{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); text-align:center; padding:7px}
+.wrap{max-width:1140px; margin:0 auto; padding:0 34px 90px}
+
+/* topbar */
+.topbar{display:flex; align-items:center; justify-content:space-between; padding:22px 0 8px}
+.brand{display:flex; align-items:center; gap:11px}
+.brand .mark{display:grid; place-items:center}
+.brand .mark svg{display:block}
+.wordmark{font-weight:700; font-size:18px; letter-spacing:-.02em}
+.wordmark .dot{color:var(--rose-deep)}
+.uimm{height:38px; width:auto; border-radius:6px}
+.topright{display:flex; align-items:center; gap:20px}
+
+/* masthead démesuré */
+.masthead{padding:14px 0 30px}
+.masthead .kicker{margin-top:14px}
+.kicker span{font-family:var(--mono); font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--navy); background:var(--rose); padding:5px 10px 4px; border-radius:3px}
+.bigtitle{font-family:var(--display); font-weight:400; color:var(--ink); font-size:clamp(40px,5.2vw,62px); line-height:1.02; letter-spacing:-.5px}
+.masthead .sub{font-size:13px; color:var(--ink-faint); margin-top:12px}
+.who{display:flex; align-items:center; gap:10px; color:var(--ink-soft); font-size:13.5px}
+.who .av{width:32px;height:32px;border-radius:50%; background:var(--gold); color:#fff; display:grid; place-items:center; font-weight:600; font-size:12.5px}
+
+/* sliding toggle */
+.mode{position:relative; display:inline-flex; padding:3px; border-radius:999px; background:var(--paper-2); box-shadow:inset 0 0 0 1px var(--rule)}
+.mode .pill{position:absolute; top:3px; bottom:3px; left:3px; width:calc(50% - 3px); border-radius:999px; background:var(--ink); transition:transform .32s var(--ease)}
+.mode.manual .pill{transform:translateX(100%)}
+.mode button{position:relative; z-index:1; flex:1; min-width:106px; font-family:var(--sans); font-size:12.5px; font-weight:600; color:var(--ink-faint); border:none; background:none; padding:7px 16px; border-radius:999px; cursor:pointer; transition:color .26s var(--ease); white-space:nowrap}
+.mode button.on{color:#fff}
+
+/* KPI cards (filters + accentuated proximity) */
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px}
+.kpi{position:relative; background:var(--card); border:1px solid var(--rule); border-radius:var(--r); padding:18px 18px 16px; box-shadow:var(--shadow-sm); cursor:pointer;
+  transition:transform .28s var(--ease), box-shadow .28s var(--ease), border-color .28s var(--ease); will-change:transform; transform-origin:center bottom;
+  opacity:0; animation:kfade .55s var(--ease) forwards}
+.kpi:nth-child(1){animation-delay:.08s}.kpi:nth-child(2){animation-delay:.15s}.kpi:nth-child(3){animation-delay:.22s}.kpi:nth-child(4){animation-delay:.29s}
+.kpi .label{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-faint); font-weight:600}
+.kpi .tag{width:8px;height:8px;border-radius:50%}
+.kpi .num{font-family:"Geist",var(--sans); color:var(--navy); font-size:48px; line-height:1; margin-top:8px; font-weight:600; letter-spacing:-1.5px}
+.kpi .foot{font-size:12px; color:var(--ink-soft); margin-top:6px}
+.kpi.green .tag{background:var(--emerald)}
+.kpi.amber .tag{background:var(--amber)}
+.kpi.red .tag{background:var(--red)}
+.kpi.grey .tag{background:var(--ink-faint)}
+.kpis .kpi .num{color:var(--navy)} /* chiffres tous en bleu marine ; le statut reste porté par la pastille/badge */
+.kpi.active{border-color:var(--rose-deep); box-shadow:var(--shadow-lift)}
+.kpi.active::after{content:""; position:absolute; left:18px; right:18px; bottom:0; height:3px; background:var(--rose); border-radius:3px}
+
+/* section header */
+.section-h{display:flex; align-items:center; gap:14px; margin:0 2px 14px}
+.section-h h2{font-size:21px}
+.search{margin-left:auto; width:270px; max-width:42vw; font-family:var(--sans); font-size:13.5px; color:var(--ink);
+  background:transparent no-repeat left 2px center; border:none; border-bottom:1px solid var(--rule-strong); padding:8px 6px 8px 26px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%238a8275' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
+  transition:border-color .2s var(--ease)}
+.search::placeholder{color:var(--ink-faint)}
+.search:focus{outline:none; border-bottom-color:var(--gold)}
+.empty{display:none; padding:34px 20px; text-align:center; color:var(--ink-faint); font-size:14px; border:1px dashed var(--rule-strong); border-radius:var(--r); background:rgba(251,248,243,.5); margin-top:-2px}
+.empty:not([hidden]){display:block}
+.cline{font-size:13px; color:var(--ink-soft); padding:2px 0; word-break:break-word}
+.filterflag{font-size:12.5px; color:var(--ink-soft); display:none; align-items:center; gap:8px}
+.filterflag.show{display:inline-flex}
+.filterflag .x{cursor:pointer; color:var(--ink-faint); border-bottom:1px dashed var(--rule-strong)}
+
+/* table (v2 style) */
+.list{background:var(--card); border:1px solid var(--rule); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; transition:opacity .24s var(--ease), filter .24s var(--ease)}
+.list.swapping{opacity:.3; filter:blur(8px)}
+.row-head,.row{display:grid; grid-template-columns:2.3fr 1.3fr 130px 26px; align-items:center; gap:14px; padding:14px 20px}
+.row-head{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); border-bottom:1px solid var(--rule); background:var(--paper-2)}
+.row{border-top:1px solid var(--rule); cursor:pointer; background:var(--card);
+  transition:background .18s var(--ease), transform .18s var(--ease), box-shadow .18s var(--ease);
+  opacity:0; animation:kfade .5s var(--ease) forwards}
+.row:first-of-type{border-top:none}
+.list .row:nth-of-type(1){animation-delay:.34s}.list .row:nth-of-type(2){animation-delay:.40s}.list .row:nth-of-type(3){animation-delay:.46s}.list .row:nth-of-type(4){animation-delay:.52s}.list .row:nth-of-type(5){animation-delay:.58s}
+.row:hover{background:var(--card-hi); transform:translateY(-1px); box-shadow:var(--shadow-lift); position:relative; z-index:2}
+.row.revealing{animation:reveal .6s var(--ease) both}
+.row.leaving{animation:leave .42s var(--ease) both; pointer-events:none}
+.who-cell{display:flex; align-items:center; gap:12px; min-width:0}
+.status-dot{width:10px;height:10px;border-radius:50%; flex:0 0 auto}
+.status-dot.green{background:var(--emerald); box-shadow:0 0 0 3px var(--emerald-bg)}
+.status-dot.amber{background:var(--amber); box-shadow:0 0 0 3px var(--amber-bg)}
+.status-dot.red{background:var(--red); box-shadow:0 0 0 3px var(--red-bg)}
+.status-dot.grey{background:var(--ink-faint); box-shadow:0 0 0 3px var(--paper-2)}
+.nm{font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.co{font-size:12.5px; color:var(--ink-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cell{font-size:13.5px; color:var(--ink-soft)}
+.cell .k{font-size:11.5px; color:var(--ink-faint)}
+.cell.tarif{font-weight:500; color:var(--ink)}
+.cell.tarif .u{color:var(--ink-faint); font-weight:400; font-family:var(--sans); font-size:12px}
+.relance{font-size:12.5px; color:var(--ink-soft)}
+.relance .auto{display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--ink)}
+.relance .auto .spark{width:6px;height:6px;border-radius:50%; background:var(--emerald); box-shadow:0 0 0 3px var(--emerald-bg)}
+/* escalade : pas de rouge sur "Auto · niveau X" — le statut ESCALADE (CAPS) est déjà rouge */
+.relance .sub{color:var(--ink-faint); font-size:11.5px}
+.badge{justify-self:start; font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; background:none; border:none; padding:0}
+.badge.green{color:var(--emerald)}
+.badge.amber{color:var(--amber)}
+.badge.red{color:var(--red)}
+.badge.grey{color:var(--ink-faint)}
+.status-dot{display:none}
+.relance .spark,.auto-note .spark{display:none}
+.chev{justify-self:center; color:var(--ink-faint); transition:transform .25s var(--ease)}
+.row.open .chev{transform:rotate(90deg); color:var(--ink)}
+
+/* detail (v2 style) */
+.detail{display:grid; grid-template-rows:0fr; transition:grid-template-rows .52s var(--ease); background:var(--paper-2)}
+.row.open + .detail{grid-template-rows:1fr; border-top:1px solid var(--rule)}
+.detail .inner{overflow:hidden}
+.detail .pad{opacity:0; transform:translateY(6px); transition:opacity .4s var(--ease) .08s, transform .4s var(--ease) .08s}
+.row.open + .detail .pad{opacity:1; transform:none}
+.detail .pad{padding:18px 20px 22px; display:grid; grid-template-columns:1.4fr 1fr; gap:24px}
+.pieces{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; align-content:start}
+.piece{display:flex; align-items:center; gap:12px; padding:11px 13px; background:var(--card); border:1px solid var(--rule); border-radius:var(--r-sm); cursor:default; transition:background .15s var(--ease), border-color .15s var(--ease)}
+.detail.manual .piece{cursor:pointer}
+.detail.manual .piece:hover{background:var(--card-hi); border-color:var(--rule-strong)}
+.btn[data-validate]{display:none}
+.fiche-mode{margin-right:auto}
+.fiche-mode button{min-width:88px; font-size:11px; padding:5px 11px}
+.piece .pdot{width:8px;height:8px;border-radius:50%; flex:0 0 auto}
+.piece .pdot.green{background:var(--emerald)} .piece .pdot.amber{background:var(--amber)} .piece .pdot.red{background:var(--red)}
+.piece .pn{font-size:13.5px; font-weight:500; flex:1}
+.piece .pd{font-size:12px; color:var(--ink-faint)}
+.piece.validating{animation:flash .8s var(--ease)}
+.side .blk{background:var(--card); border:1px solid var(--rule); border-radius:var(--r-sm); padding:13px 15px; margin-bottom:10px}
+.side .bt{font-size:11.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px}
+.timeline{list-style:none; margin:0; padding:0; font-size:12.5px}
+.timeline li{display:flex; align-items:center; gap:9px; padding:3px 0; color:var(--ink-soft)}
+.timeline li .td{width:7px;height:7px;border-radius:50%; background:var(--rule-strong); flex:0 0 auto}
+.timeline li.next{color:var(--emerald); font-weight:600}
+.timeline li.next .td{background:var(--emerald)}
+.finline{display:flex; justify-content:space-between; font-size:13px; padding:3px 0; color:var(--ink-soft)}
+.finline b{color:var(--ink)}
+.echline{font-size:13px; color:var(--ink-soft)}
+.echline .k{display:block; font-size:11.5px; color:var(--ink-faint); margin-bottom:1px}
+.actions{grid-column:1 / -1; display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:4px; padding-top:15px; border-top:1px solid var(--rule)}
+.auto-note{font-size:12.5px; color:var(--ink-faint); display:inline-flex; align-items:center; gap:8px}
+.auto-note .spark{width:6px;height:6px;border-radius:50%; background:var(--emerald); box-shadow:0 0 0 3px var(--emerald-bg)}
+.detail.manual .auto-note{display:none}
+.btn{font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer; transition:transform .15s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease)}
+.btn.gold{background:var(--gold); color:#fff; border:none; padding:10px 16px; border-radius:10px}
+.btn.gold:hover{transform:translateY(-1px); box-shadow:var(--shadow-sm)}
+.btn.line{background:var(--card); color:var(--ink); border:1px solid var(--rule-strong); padding:10px 15px; border-radius:10px}
+.btn.line:hover{transform:translateY(-1px); box-shadow:var(--shadow-sm)}
+.btn.ghost{background:none; border:none; color:var(--ink-soft); padding:6px 0; border-bottom:1px solid transparent}
+.btn.ghost:hover{color:var(--ink); border-bottom-color:var(--rule-strong)}
+.btn.ghost.danger{color:var(--red)}
+.manual-only{display:none}
+.detail.manual .manual-only{display:inline-block}
+
+.tick{display:inline-grid; place-items:center; width:18px;height:18px;border-radius:50%; background:var(--emerald); color:#fff; font-size:11px; transform:scale(0)}
+.tick.show{animation:pop .4s var(--ease) forwards}
+
+.demobar{display:flex; align-items:center; gap:16px; justify-content:center; margin-top:30px; padding:14px; border:1px dashed var(--rule-strong); border-radius:var(--r); background:rgba(251,248,243,.6)}
+.demobar .sim{font-family:var(--sans); font-size:13px; font-weight:600; color:#f4efe6; background:#34302a; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; transition:transform .15s var(--ease)}
+.demobar .sim:hover{transform:translateY(-1px)}
+.demobar .cap{font-size:12.5px; color:var(--ink-faint)}
+
+@keyframes rise{to{opacity:1; transform:none}}
+@keyframes kfade{from{opacity:0} to{opacity:1}}
+@keyframes reveal{0%{opacity:0; filter:blur(12px); transform:translateY(10px) scale(.99)} 100%{opacity:1; filter:blur(0); transform:none}}
+@keyframes leave{0%{opacity:1; filter:blur(0)} 100%{opacity:0; filter:blur(9px); transform:translateY(7px)}}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes flash{0%{background:#fff}40%{background:var(--emerald-bg)}100%{background:var(--card)}}
+/* bouton Nouveau */
+.btn-new{font-family:var(--sans); font-size:13px; font-weight:600; color:#fff; background:var(--navy); border:none; padding:9px 15px; border-radius:9px; cursor:pointer; white-space:nowrap; transition:transform .15s var(--ease), box-shadow .15s var(--ease)}
+.btn-new:hover{transform:translateY(-1px); box-shadow:var(--shadow-sm)}
+
+/* modal création / édition */
+.modal[hidden]{display:none}
+.modal{position:fixed; inset:0; z-index:50; display:grid; place-items:center; background:rgba(39,35,32,.4); padding:24px; animation:mfade .2s var(--ease)}
+.modal-card{background:var(--paper); border:1px solid var(--rule-strong); border-radius:16px; box-shadow:var(--shadow-lift); width:min(720px,100%); max-height:90vh; overflow:auto; padding:24px 28px 22px; animation:mrise .26s var(--ease)}
+.modal-title{font-family:var(--display); font-weight:400; font-size:30px; letter-spacing:-1px; color:var(--ink); margin:4px 0 18px}
+.fgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 16px}
+.fgrid label{display:flex; flex-direction:column; gap:5px; font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint)}
+.fgrid input,.fgrid select{font-family:var(--sans); font-size:14px; color:var(--ink); background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:9px 10px; transition:border-color .15s var(--ease)}
+.fgrid input:focus,.fgrid select:focus{outline:none; border-color:var(--rose-deep)}
+.fgrid label.full{grid-column:1 / -1}
+.fgrid label[hidden]{display:none}
+.checks{display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:4px}
+.chk{flex-direction:row !important; align-items:center; gap:7px; font-family:var(--sans); font-size:13.5px; letter-spacing:0; text-transform:none; color:var(--ink); cursor:pointer}
+.chk input[type=checkbox]{width:16px; height:16px; padding:0; border:1px solid var(--rule-strong); background:var(--card); accent-color:var(--navy)}
+.modal-actions{display:flex; justify-content:flex-end; align-items:center; gap:16px; margin-top:22px; padding-top:16px; border-top:1px solid var(--rule)}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+@keyframes mrise{from{opacity:0; transform:translateY(10px) scale(.99)}to{opacity:1; transform:none}}
+@media (max-width:640px){.fgrid{grid-template-columns:1fr 1fr}}
+
+/* onglets Registre / Data */
+.tabs{display:inline-flex; gap:4px; background:var(--paper-2); border-radius:999px; padding:3px; box-shadow:inset 0 0 0 1px var(--rule); margin-bottom:26px}
+.tab{font-family:var(--sans); font-size:13px; font-weight:600; color:var(--ink-faint); border:none; background:none; padding:8px 20px; border-radius:999px; cursor:pointer; transition:color .2s var(--ease), background .2s var(--ease)}
+.tab.on{background:var(--ink); color:#fff}
+#panel-data[hidden],#panel-registre[hidden]{display:none}
+
+/* panneau Data */
+.data-figs{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px}
+.dfig{background:var(--card); border:1px solid var(--rule); border-radius:var(--r); padding:18px; box-shadow:var(--shadow-sm)}
+.dfig .l{font-size:12.5px; color:var(--ink-faint); font-weight:600}
+.dfig .v{font-family:"Geist",var(--sans); font-weight:600; color:var(--navy); font-size:38px; letter-spacing:-1.5px; line-height:1; margin-top:8px}
+.dfig .v .u{font-family:var(--sans); font-size:14px; color:var(--ink-faint); font-weight:500; margin-left:3px; letter-spacing:0}
+.dfig .f{font-size:12px; color:var(--ink-soft); margin-top:6px}
+.dblock{background:var(--card); border:1px solid var(--rule); border-radius:var(--r); padding:22px 24px; margin-bottom:18px; box-shadow:var(--shadow-sm)}
+.dblock h3{font-family:var(--display); font-weight:400; font-size:23px; letter-spacing:-.3px; margin:0 0 3px}
+.dblock .bsub{font-size:12.5px; color:var(--ink-faint); margin-bottom:16px}
+.range{display:grid; grid-template-columns:130px 1fr 170px; align-items:center; gap:16px; padding:11px 0; border-bottom:1px solid var(--rule-soft)}
+.range:last-child{border-bottom:none}
+.range .sp{font-size:13.5px; font-weight:600}
+.range .track{position:relative; height:8px; background:var(--paper-2); border-radius:99px}
+.range .fill{position:absolute; top:0; bottom:0; background:var(--rose-deep); border-radius:99px}
+.range .fill.hot{background:var(--rose-strong)}
+.range .amt{font-family:var(--mono); font-size:12.5px; color:var(--ink-soft); text-align:right; white-space:nowrap}
+.range .amt .ec{color:var(--rose-strong); font-weight:500}
+.chronic{display:grid; grid-template-columns:1.7fr 1.1fr 1.5fr; gap:14px; align-items:center; padding:12px 0; border-bottom:1px solid var(--rule-soft)}
+.chronic:last-child{border-bottom:none}
+.chronic .who{font-size:14px; font-weight:600}
+.chronic .who small{display:block; color:var(--ink-faint); font-weight:400; font-size:12px}
+.chronic .met{font-family:var(--mono); font-size:12.5px; color:var(--ink-soft)}
+.chronic .sug{font-size:12.5px; color:var(--navy); font-weight:600; justify-self:start}
+.two{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.two .dblock{margin-bottom:0}
+.bigstat{font-family:"Geist",var(--sans); font-weight:600; color:var(--navy); font-size:34px; letter-spacing:-1px; margin-top:6px}
+.bigstat .u{font-family:var(--sans); font-size:14px; color:var(--ink-faint); font-weight:500; margin-left:3px}
+.data-note{font-size:12px; color:var(--ink-faint); margin-top:8px}
+#matSearch{width:100%; max-width:380px; margin-bottom:6px}
+.matgroup{padding:12px 0; border-bottom:1px solid var(--rule-soft)}
+.matgroup:last-child{border-bottom:none}
+.matgroup .gh{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:7px}
+.matgroup .gh .gn{font-size:14px; font-weight:600}
+.matgroup .gh .gr{font-family:var(--mono); font-size:12px; color:var(--ink-soft); white-space:nowrap}
+.matgroup .gh .gr .ec{color:var(--rose-strong); font-weight:500}
+.matrow{display:grid; grid-template-columns:1.6fr 1.2fr 80px; gap:14px; padding:5px 0; font-size:13px; color:var(--ink-soft)}
+.matrow .mn{color:var(--ink); font-weight:500}
+.matrow .mt{font-family:var(--mono); text-align:right; color:var(--ink)}
+#retards{background:var(--card); border:1px solid var(--rule); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+#retards .row{border-top:none}
+.retard-ctx{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; padding:11px 20px 1px; border-top:1px solid var(--rule); font-size:12px}
+#retards .row-head + .retard-ctx{border-top:none}
+.retard-ctx .met{font-family:var(--mono); color:var(--ink-soft)}
+.retard-ctx .sug{color:var(--navy); font-weight:600}
+@media (max-width:820px){.data-figs{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+
+@media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}.kpi,.row{opacity:1 !important; transform:none !important; filter:none !important}}
+@media (max-width:880px){.detail .pad{grid-template-columns:1fr}.pieces{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="mock-strip">Variante « card-inspired » · Instrument Serif (titre) + Instrument Sans + JetBrains Mono · statut en CAPS</div>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 200 200" width="30" height="30" aria-hidden="true"><g transform="rotate(-12 100 100)"><path d="M100,30 C140,38 168,76 158,120 C148,160 110,172 86,160 C62,148 50,118 56,90 C62,60 80,30 100,30 Z" fill="#1e2b4a"/></g></svg></span>
+      <span class="wordmark">Conformité<span class="dot">.</span></span>
+    </div>
+    <div class="topright">
+      <div class="who"><span>Malika Bensaïd</span><div class="av">MB</div></div>
+      <img class="uimm" src="assets/uimm-logo-bw.png" alt="UIMM — La Fabrique de l'Avenir">
+    </div>
+  </div>
+
+  <header class="masthead">
+    <h1 class="bigtitle">Conformité &amp; registre prestataire</h1>
+    <div class="kicker"><span>La fabrique de l'avenir</span></div>
+    <div class="sub">UIMM · pilote URSSAF — vue Malika</div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="registre">Registre</button>
+    <button class="tab" data-tab="data">Data</button>
+  </div>
+
+  <div id="panel-registre">
+  <div class="kpis" id="kpis">
+    <div class="kpi green" data-filter="green"><div class="label"><span class="tag"></span>En règle</div><div class="num" data-to="2">0</div><div class="foot">à jour de toutes leurs pièces</div></div>
+    <div class="kpi amber" data-filter="amber"><div class="label"><span class="tag"></span>Bientôt dû</div><div class="num" data-to="1">0</div><div class="foot">renouvellement &lt; 30 jours</div></div>
+    <div class="kpi red" data-filter="red"><div class="label"><span class="tag"></span>Non conformes</div><div class="num" data-to="3">0</div><div class="foot">exposition URSSAF directe</div></div>
+    <div class="kpi grey" data-filter="grey"><div class="label"><span class="tag"></span>Angles morts</div><div class="num" data-to="1">0</div><div class="foot">jamais sollicités</div></div>
+  </div>
+
+  <div class="section-h">
+    <h2>Registre prestataire</h2>
+    <span class="filterflag" id="flag">filtré : <b id="flagname"></b> <span class="x" id="flagx">tout afficher ✕</span></span>
+    <input id="search" class="search" type="search" placeholder="Rechercher un prestataire ou un centre…" autocomplete="off">
+    <button class="btn-new" id="btnNew">+ Nouveau prestataire</button>
+  </div>
+  <div class="empty" id="empty" hidden>Aucun prestataire ne correspond.</div>
+
+  <div class="list" id="list">
+    <div class="row-head"><div>Prestataire</div><div>Tarif</div><div>Prochaine échéance</div><div>Relance</div><div>Statut</div><div></div></div>
+
+    <!-- prestataire pilote (toi) -->
+    <div class="row" data-row data-status="red">
+      <div class="who-cell"><span class="status-dot red"></span><div style="min-width:0"><div class="nm">Thomas Murphy</div><div class="co">EI · anglais — Dijon</div></div></div>
+      <div class="cell tarif">48 <span class="u">€/h HT</span></div>
+      <div class="cell"><span class="k">Toutes pièces</span><br>à fournir</div>
+      <div class="relance"><span class="auto"><span class="spark"></span>Auto · niveau 1</span><br><span class="sub">onboarding en cours</span></div>
+      <div><span class="badge red">Non conforme</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation de vigilance</span><span class="pd">à fournir</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">à fournir</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à fournir</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Copie CNI</span><span class="pd">à fournir</span></div>
+      </div>
+      <div class="side">
+        <div class="blk"><div class="bt">Relances automatiques</div>
+          <ul class="timeline">
+            <li><span class="td"></span>Niveau 1 — 28/06 envoyée</li>
+            <li class="next"><span class="td"></span>Niveau 2 — 05/07 (programmée)</li>
+          </ul>
+        </div>
+        <div class="blk"><div class="bt">Tarification</div>
+          <div class="finline"><span>Tarif</span><b>48 €/h HT</b></div>
+          <div class="finline"><span>Base</span><b>horaire · assujetti TVA</b></div>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="auto-note"><span class="spark"></span>Prestataire en cours d'onboarding — relances automatiques actives</span>
+        <button class="btn gold">Dossier de preuve</button>
+        <button class="btn line" data-validate>Valider un document reçu</button>
+        <button class="btn ghost manual-only">Relancer maintenant</button>
+        <button class="btn ghost danger manual-only">Suspendre l'auto</button>
+      </div>
+    </div></div></div>
+
+    <!-- escalade -->
+    <div class="row" data-row data-status="red">
+      <div class="who-cell"><span class="status-dot red"></span><div style="min-width:0"><div class="nm">Julien Mercier</div><div class="co">Atelier Norest · soudage</div></div></div>
+      <div class="cell tarif">675 <span class="u">€/j HT</span></div>
+      <div class="cell"><span class="k">Att. vigilance</span><br>expirée le 12/04</div>
+      <div class="relance esc"><span class="auto"><span class="spark"></span>Auto · niveau 3</span><br><span class="sub">escaladée il y a 9 j</span></div>
+      <div><span class="badge red">Escalade</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation de vigilance</span><span class="pd">expirée 12/04</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">manquante</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation régularité</span><span class="pd">à jour</span></div>
+      </div>
+      <div class="side">
+        <div class="blk"><div class="bt">Relances automatiques</div>
+          <ul class="timeline">
+            <li><span class="td"></span>Niveau 1 — 12/06 envoyée</li>
+            <li><span class="td"></span>Niveau 2 — 19/06 envoyée</li>
+            <li><span class="td"></span>Niveau 3 — 24/06 envoyée</li>
+            <li class="next"><span class="td"></span>Seuil atteint → escaladée vers toi</li>
+          </ul>
+        </div>
+        <div class="blk"><div class="bt">Tarification</div>
+          <div class="finline"><span>Tarif</span><b>675 €/j HT</b></div>
+          <div class="finline"><span>Frais déplacement</span><b>0,50 €/km</b></div>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="auto-note"><span class="spark"></span>Relances gérées automatiquement — action requise seulement sur l'escalade</span>
+        <button class="btn gold">Dossier de preuve</button>
+        <button class="btn line" data-validate>Valider un document reçu</button>
+        <button class="btn ghost danger">Traiter l'escalade</button>
+        <button class="btn ghost manual-only">Relancer maintenant</button>
+        <button class="btn ghost danger manual-only">Suspendre l'auto</button>
+      </div>
+    </div></div></div>
+
+    <!-- non conforme -->
+    <div class="row" data-row data-status="red">
+      <div class="who-cell"><span class="status-dot red"></span><div style="min-width:0"><div class="nm">Claire Fontaine</div><div class="co">Cabinet Defi · management</div></div></div>
+      <div class="cell tarif">600 <span class="u">€/j HT</span></div>
+      <div class="cell"><span class="k">RC Pro</span><br>manquante</div>
+      <div class="relance"><span class="auto"><span class="spark"></span>Auto · niveau 1</span><br><span class="sub">prochaine le 01/07</span></div>
+      <div><span class="badge red">Non conforme</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">manquante</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot amber"></span><span class="pn">Diplômes</span><span class="pd">à vérifier</span></div>
+      </div>
+      <div class="side">
+        <div class="blk"><div class="bt">Relances automatiques</div>
+          <ul class="timeline">
+            <li><span class="td"></span>Niveau 1 — 24/06 envoyée</li>
+            <li class="next"><span class="td"></span>Niveau 2 — 01/07 (programmée)</li>
+          </ul>
+        </div>
+        <div class="blk"><div class="bt">Tarification</div>
+          <div class="finline"><span>Tarif</span><b>600 €/j HT</b></div>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="auto-note"><span class="spark"></span>Relance niveau 2 programmée — rien à faire de ton côté</span>
+        <button class="btn gold">Dossier de preuve</button>
+        <button class="btn line" data-validate>Valider un document reçu</button>
+        <button class="btn ghost manual-only">Relancer maintenant</button>
+        <button class="btn ghost danger manual-only">Suspendre l'auto</button>
+      </div>
+    </div></div></div>
+
+    <!-- bientôt -->
+    <div class="row" data-row data-status="amber">
+      <div class="who-cell"><span class="status-dot amber"></span><div style="min-width:0"><div class="nm">Marc Lemoine</div><div class="co">Kappa Conseil · productique</div></div></div>
+      <div class="cell tarif">500 <span class="u">€/j TTC</span></div>
+      <div class="cell"><span class="k">Att. régularité</span><br>dans 18 jours</div>
+      <div class="relance"><span class="sub">aucune nécessaire</span></div>
+      <div><span class="badge amber">Bientôt dû</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot amber"></span><span class="pn">Attestation régularité</span><span class="pd">renouv. 16/07</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation RC Pro</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
+      </div>
+      <div class="side">
+        <div class="blk"><div class="bt">Relances automatiques</div>
+          <ul class="timeline"><li class="next"><span class="td"></span>Rappel auto à J-7 du renouvellement (09/07)</li></ul>
+        </div>
+        <div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>500 €/j TTC</b></div></div>
+      </div>
+      <div class="actions">
+        <span class="auto-note"><span class="spark"></span>Rappel automatique programmé — surveillance seulement</span>
+        <button class="btn gold">Dossier de preuve</button>
+        <button class="btn line" data-validate>Valider un document reçu</button>
+        <button class="btn ghost manual-only">Relancer maintenant</button>
+      </div>
+    </div></div></div>
+
+    <!-- en règle (horaire) -->
+    <div class="row" data-row data-status="green">
+      <div class="who-cell"><span class="status-dot green"></span><div style="min-width:0"><div class="nm">Paul Rivière</div><div class="co">indépendant · économie</div></div></div>
+      <div class="cell tarif">52 <span class="u">€/h TTC</span></div>
+      <div class="cell"><span class="k">Prochaine</span><br>22/10</div>
+      <div class="relance"><span class="sub">—</span></div>
+      <div><span class="badge green">En règle</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation RC Pro</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Copie CNI</span><span class="pd">à jour</span></div>
+      </div>
+      <div class="side">
+        <div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>52 €/h TTC</b></div><div class="finline"><span>Base</span><b>horaire</b></div></div>
+      </div>
+      <div class="actions"><span class="auto-note"><span class="spark"></span>Conforme — aucune relance en cours</span><button class="btn gold">Dossier de preuve</button><button class="btn line" data-validate>Valider un document reçu</button></div>
+    </div></div></div>
+
+    <!-- en règle -->
+    <div class="row" data-row data-status="green">
+      <div class="who-cell"><span class="status-dot green"></span><div style="min-width:0"><div class="nm">Henri Delcourt</div><div class="co">Delcourt Diagnostic · maintenance</div></div></div>
+      <div class="cell tarif">500 <span class="u">€/j TTC</span></div>
+      <div class="cell"><span class="k">Prochaine</span><br>15/11</div>
+      <div class="relance"><span class="sub">—</span></div>
+      <div><span class="badge green">En règle</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation de vigilance</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Attestation RC Pro</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Kbis / SIRENE</span><span class="pd">à jour</span></div>
+        <div class="piece"><span class="pdot green"></span><span class="pn">Diplômes</span><span class="pd">à jour</span></div>
+      </div>
+      <div class="side"><div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>500 €/j TTC</b></div></div></div>
+      <div class="actions"><span class="auto-note"><span class="spark"></span>Conforme — aucune relance en cours</span><button class="btn gold">Dossier de preuve</button><button class="btn line" data-validate>Valider un document reçu</button></div>
+    </div></div></div>
+
+    <!-- angle mort -->
+    <div class="row" data-row data-status="grey">
+      <div class="who-cell"><span class="status-dot grey"></span><div style="min-width:0"><div class="nm">Nadia Brunet</div><div class="co">structure portée · soudage</div></div></div>
+      <div class="cell tarif">— <span class="u">non renseigné</span></div>
+      <div class="cell"><span class="k">Aucune pièce</span><br>jamais sollicité</div>
+      <div class="relance"><span class="sub">jamais relancé</span></div>
+      <div><span class="badge grey">Angle mort</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation de vigilance</span><span class="pd">manquante</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Attestation RC Pro</span><span class="pd">manquante</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Kbis / SIRENE</span><span class="pd">manquant</span></div>
+        <div class="piece"><span class="pdot red"></span><span class="pn">Copie CNI</span><span class="pd">manquante</span></div>
+      </div>
+      <div class="side">
+        <div class="blk"><div class="bt">Relances automatiques</div>
+          <ul class="timeline"><li class="next"><span class="td"></span>Jamais sollicité — à intégrer au cycle</li></ul>
+        </div>
+        <div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>non renseigné</b></div></div>
+      </div>
+      <div class="actions">
+        <span class="auto-note"><span class="spark"></span>Prestataire hors cycle — démarrer la sollicitation</span>
+        <button class="btn gold">Lancer la sollicitation</button>
+        <button class="btn line" data-validate>Valider un document reçu</button>
+      </div>
+    </div></div></div>
+
+  </div>
+  </div><!-- /panel-registre -->
+
+  <div id="panel-data" hidden>
+
+    <div class="data-figs">
+      <div class="dfig"><div class="l">Relances auto / mois</div><div class="v">42</div><div class="f">envoyées automatiquement</div></div>
+      <div class="dfig"><div class="l">Intervenants externes</div><div class="v">110</div><div class="f">actifs sur 118 référencés</div></div>
+      <div class="dfig"><div class="l">Taux de conformité</div><div class="v">68<span class="u">%</span></div><div class="f">prestataires à jour de leurs pièces</div></div>
+      <div class="dfig"><div class="l">Délai de régularisation</div><div class="v">9<span class="u">j</span></div><div class="f">moyen entre 1re relance et dépôt</div></div>
+    </div>
+
+    <div class="dblock">
+      <h3>Retards chroniques — candidats à un accompagnement</h3>
+      <div class="bsub">Prestataires régulièrement en retard : un cadrage ou une aide vaut mieux qu'une énième relance.</div>
+      <div id="retards"></div>
+    </div>
+
+    <div class="two">
+      <div class="dblock">
+        <h3>Pièce la plus souvent manquante</h3>
+        <div class="bsub">Cibler l'effort sur le document qui bloque le plus.</div>
+        <div class="range" style="grid-template-columns:150px 1fr 56px"><span class="sp">Attestation RC Pro</span><span class="track"><span class="fill hot" style="left:0;width:38%"></span></span><span class="amt">38 %</span></div>
+        <div class="range" style="grid-template-columns:150px 1fr 56px"><span class="sp">Att. de vigilance</span><span class="track"><span class="fill" style="left:0;width:22%"></span></span><span class="amt">22 %</span></div>
+        <div class="range" style="grid-template-columns:150px 1fr 56px"><span class="sp">Kbis / SIRENE</span><span class="track"><span class="fill" style="left:0;width:15%"></span></span><span class="amt">15 %</span></div>
+        <div class="data-note">Part des prestataires non conformes à qui cette pièce manque.</div>
+      </div>
+      <div class="dblock">
+        <h3>Efficacité du système</h3>
+        <div class="bsub">Le temps que met une relance à produire un dépôt validé.</div>
+        <div class="bigstat">9<span class="u">jours</span></div>
+        <div class="data-note">Délai moyen entre la 1re relance automatique et le dépôt validé.</div>
+        <div class="bigstat" style="margin-top:16px">94<span class="u">%</span></div>
+        <div class="data-note">Part des relances résolues <b>sans intervention de Malika</b> (gestion par exception).</div>
+      </div>
+    </div>
+
+    <div class="data-note" style="text-align:center;margin-top:6px">Données illustratives — le vrai calcul s'appuiera sur le référentiel réel (Excel + Yparéo).</div>
+
+  </div><!-- /panel-data -->
+
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <div class="kicker"><span id="modalKicker">Nouveau dossier</span></div>
+    <h2 class="modal-title" id="modalTitle">Nouveau prestataire</h2>
+    <form id="presForm">
+      <div class="fgrid">
+        <label>Prénom<input name="prenom" required></label>
+        <label>Nom<input name="nom" required></label>
+        <label>Société<input name="societe"></label>
+        <label>Forme juridique<select name="forme"><option>EI</option><option>Auto-entrepreneur</option><option>SARL</option><option>SAS</option><option>ASSO</option></select></label>
+        <label>N° SIRET<input name="siret" placeholder="14 chiffres"></label>
+        <label>Spécialité<input name="specialite" placeholder="anglais, soudage…"></label>
+        <label>Email<input name="email" type="email"></label>
+        <label>Téléphone<input name="tel"></label>
+        <label>CP<input name="cp"></label>
+        <label>Ville<input name="ville"></label>
+        <label>Site d'intervention<select name="siteselect" id="siteselect"><option value="">— à préciser —</option><option>Chalon</option><option>Dijon</option><option>Le Creusot</option><option>Sur site entreprise</option><option>Plusieurs centres</option></select></label>
+        <label class="full" id="sitesMulti" hidden>Centres concernés
+          <div class="checks">
+            <label class="chk"><input type="checkbox" name="sites" value="Chalon"> Chalon</label>
+            <label class="chk"><input type="checkbox" name="sites" value="Dijon"> Dijon</label>
+            <label class="chk"><input type="checkbox" name="sites" value="Le Creusot"> Le Creusot</label>
+            <label class="chk"><input type="checkbox" name="sites" value="Sur site entreprise"> Sur site entreprise</label>
+          </div>
+        </label>
+        <label>Tarif (€)<input name="tarif" type="number" min="0" step="1"></label>
+        <label>Base<select name="base"><option>Horaire</option><option>Journalier</option></select></label>
+        <label>Régime<select name="httc"><option>HT</option><option>TTC</option></select></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="modalCancel">Annuler</button>
+        <button type="submit" class="btn-new" id="modalSave">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* tickers */
+function tick(el){const to=+el.dataset.to,from=1000,dur=2200,t0=performance.now();if(reduce){el.textContent=to;return;}
+  (function s(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=Math.round(from+(to-from)*e);if(p<1)requestAnimationFrame(s);})(performance.now());}
+addEventListener('load',()=>{
+  if(!reduce) document.querySelectorAll('.kpi .num').forEach(el=>el.textContent='1000');
+  setTimeout(()=>document.querySelectorAll('.kpi .num').forEach(tick),280);
+});
+
+/* proximity on KPI cards — dock-style, gated to the band's own zone (ne réagit pas ailleurs) */
+const RANGE=240, MAX=0.16, MARGIN=22, band=document.getElementById('kpis'), kpis=[...band.querySelectorAll('.kpi')];
+function resetKpis(){kpis.forEach(el=>{el.style.transform='';el.style.zIndex='';el.style.boxShadow='';if(!el.classList.contains('active'))el.style.borderColor='';});}
+if(!reduce){
+  addEventListener('pointermove',e=>{
+    const b=band.getBoundingClientRect();
+    if(e.clientY < b.top - MARGIN || e.clientY > b.bottom + MARGIN){ resetKpis(); return; }
+    kpis.forEach(el=>{
+      const r=el.getBoundingClientRect(),cx=r.x+r.width/2;
+      const lin=Math.max(0,1-Math.abs(e.clientX-cx)/RANGE);
+      const t=lin*lin*(3-2*lin); // smoothstep → falloff dock
+      el.style.transform=`scale(${1+t*MAX})`;
+      el.style.zIndex = t>0.05 ? Math.round(10+t*10) : '';
+      el.style.boxShadow = t>0.1 ? 'var(--shadow-lift)' : 'var(--shadow-sm)';
+      if(!el.classList.contains('active')) el.style.borderColor = t>0.4 ? 'var(--rule-strong)' : 'var(--rule)';
+    });
+  });
+  addEventListener('pointerleave',resetKpis);
+}
+
+/* contact info (fictif) injecté dans chaque fiche — "en caché", visible au dépliage */
+const CONTACTS=[
+  {e:'t.murphy@formation-demo.fr', t:'06 00 00 00 00', v:'Semur-en-Auxois (21140)', s:'807 905 526 00032'},
+  {e:'contact@atelier-norest.fr', t:'06 12 34 56 78', v:'Dijon (21000)', s:'900 100 200 00013'},
+  {e:'c.fontaine@cabinet-defi.fr', t:'06 23 45 67 89', v:'Chalon-sur-Saône (71100)', s:'900 200 300 00021'},
+  {e:'m.lemoine@kappa-conseil.fr', t:'06 34 56 78 90', v:'Saint-Loup-de-Varennes (71240)', s:'900 300 400 00038'},
+  {e:'paul.riviere@example.fr', t:'06 45 67 89 01', v:'Chalon-sur-Saône (71100)', s:'900 400 500 00046'},
+  {e:'contact@delcourt-diag.fr', t:'06 56 78 90 12', v:'Cussey-les-Forges (21580)', s:'900 500 600 00012'},
+  {e:'n.brunet@structure-portee.fr', t:'06 67 89 01 23', v:'Gergy (71590)', s:'900 600 700 00020'},
+];
+document.querySelectorAll('[data-row]').forEach((row,i)=>{
+  row.dataset.search=(row.querySelector('.nm').textContent+' '+row.querySelector('.co').textContent).toLowerCase();
+  const c=CONTACTS[i], side=row.nextElementSibling.querySelector('.side');
+  if(c&&side){
+    const b=document.createElement('div'); b.className='blk';
+    b.innerHTML=`<div class="bt">Contact</div><div class="cline">${c.e}</div><div class="cline">${c.t} · ${c.v}</div><div class="cline">SIRET <span class="tnum">${c.s}</span></div>`;
+    side.appendChild(b);
+  }
+});
+
+/* retire la colonne "Prochaine échéance" → déplacée en tête de la fiche dépliée */
+(function(){
+  const head=document.querySelector('.row-head');
+  if(head && head.children[2]) head.children[2].remove(); // "Prochaine échéance"
+  if(head && head.children[1]) head.children[1].remove(); // "Tarif" (déjà dans la fiche)
+  document.querySelectorAll('[data-row]').forEach(row=>{
+    const ech=row.querySelector('.cell:not(.tarif)');
+    if(ech){
+      const side=row.nextElementSibling.querySelector('.side');
+      if(side){
+        const b=document.createElement('div'); b.className='blk';
+        b.innerHTML='<div class="bt">Prochaine échéance</div><div class="echline">'+ech.innerHTML+'</div>';
+        side.insertBefore(b, side.firstChild);
+      }
+      ech.remove();
+    }
+    const tarif=row.querySelector('.cell.tarif'); if(tarif) tarif.remove(); // tarif visible en déroulant
+  });
+})();
+
+/* centres d'intervention (illustratif) → rend la recherche par centre possible */
+const SITE_MAP=['Dijon','Chalon','Chalon, Dijon','Le Creusot','Dijon','Chalon, Le Creusot','Sur site entreprise'];
+document.querySelectorAll('[data-row]').forEach((row,i)=>{ if(!row.dataset.sites) row.dataset.sites=SITE_MAP[i]||''; });
+
+/* KPI filter + recherche — render commun ; le clic KPI floute/réagence/ré-affiche en bloc */
+const NAMES={green:'En règle',amber:'Bientôt dû',red:'Non conformes',grey:'Angles morts'};
+const flag=document.getElementById('flag'),flagname=document.getElementById('flagname'),listEl=document.getElementById('list'),searchEl=document.getElementById('search'),emptyEl=document.getElementById('empty');
+let current=null, query='';
+function rowText(row){return (row.querySelector('.nm').textContent+' '+row.querySelector('.co').textContent+' '+(row.dataset.sites||'')).toLowerCase();}
+function matches(row){return (!current||row.dataset.status===current)&&(!query||rowText(row).includes(query));}
+function renderRows(){
+  let n=0;
+  document.querySelectorAll('[data-row]').forEach(row=>{
+    const show=matches(row); row.style.display=show?'':'none'; row.nextElementSibling.style.display=show?'':'none'; if(show)n++;
+  });
+  listEl.style.display=n?'':'none'; emptyEl.hidden=n>0;
+}
+function applyFilter(f){
+  current=f;
+  document.querySelectorAll('.row.open').forEach(r=>r.classList.remove('open'));
+  kpis.forEach(k=>{const on=k.dataset.filter===f;k.classList.toggle('active',on);if(!on)k.style.borderColor='';});
+  if(f){flag.classList.add('show');flagname.textContent=NAMES[f];}else{flag.classList.remove('show');}
+  if(reduce){renderRows();return;}
+  listEl.classList.add('swapping');
+  setTimeout(()=>{ renderRows(); requestAnimationFrame(()=>listEl.classList.remove('swapping')); },240);
+}
+kpis.forEach(k=>k.addEventListener('click',()=>applyFilter(current===k.dataset.filter?null:k.dataset.filter)));
+document.getElementById('flagx').addEventListener('click',()=>applyFilter(null));
+searchEl.addEventListener('input',()=>{
+  query=searchEl.value.toLowerCase().trim();
+  if(query){ current=null; kpis.forEach(k=>{k.classList.remove('active');k.style.borderColor='';}); flag.classList.remove('show'); }
+  renderRows();
+});
+
+/* toggle Auto/Manuel PAR FICHE (le mode de relance est propre à chaque prestataire) */
+function addModeToggle(detail){
+  const actions=detail.querySelector('.actions'); if(!actions||actions.querySelector('.fiche-mode'))return;
+  const m=document.createElement('div'); m.className='mode fiche-mode';
+  m.innerHTML='<span class="pill"></span><button class="on" type="button" data-m="auto">Automatique</button><button type="button" data-m="manual">Manuel</button>';
+  m.querySelectorAll('button').forEach(b=>b.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    m.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    const man=b.dataset.m==='manual'; m.classList.toggle('manual',man); detail.classList.toggle('manual',man);
+  }));
+  actions.insertBefore(m, actions.firstChild);
+}
+
+/* accordion + recadrage dans la fenêtre à l'ouverture */
+function frameDetail(row,detail){
+  const r=row.getBoundingClientRect(), vh=innerHeight;
+  const detailH=detail.scrollHeight, groupBottom=r.bottom+detailH;
+  // ne scrolle que si la fiche dépasse en bas, ou si la ligne est trop haute/cachée en haut
+  if(groupBottom>vh-20 || r.top<88){
+    const target=scrollY + r.top - 96; // place la ligne juste sous l'en-tête
+    scrollTo({top:Math.max(0,target), behavior:reduce?'auto':'smooth'});
+  }
+}
+function bindAccordion(row){ row.addEventListener('click',()=>{
+  const open=row.classList.contains('open');
+  document.querySelectorAll('.row.open').forEach(r=>r.classList.remove('open'));
+  if(open) return;
+  row.classList.add('open');
+  const detail=row.nextElementSibling;
+  if(reduce){ frameDetail(row,detail); return; }
+  const onEnd=e=>{ if(e.propertyName!=='grid-template-rows')return; detail.removeEventListener('transitionend',onEnd); frameDetail(row,detail); };
+  detail.addEventListener('transitionend',onEnd);
+}); }
+document.querySelectorAll('[data-row]').forEach(bindAccordion);
+
+/* validation manuelle AU CHOIX : cliquer une pièce la valide ; recliquer la dévalide */
+document.querySelectorAll('[data-row]').forEach(row=>{
+  const rl=row.querySelector('.relance');
+  row.dataset.origrelance=rl.innerHTML; row.dataset.origrelancecls=rl.className;
+});
+function recomputeRow(detail){
+  const dots=[...detail.querySelectorAll('.pdot')];
+  const row=detail.previousElementSibling;
+  const sd=row.querySelector('.status-dot'), b=row.querySelector('.badge'), rl=row.querySelector('.relance');
+  const st = dots.some(d=>d.classList.contains('red')) ? 'red'
+           : dots.some(d=>d.classList.contains('amber')) ? 'amber' : 'green';
+  row.dataset.status=st; sd.className='status-dot '+st;
+  const map={green:['badge green','En règle'], amber:['badge amber','Bientôt dû'], red:['badge red','Non conforme']};
+  b.className=map[st][0]; b.textContent=map[st][1];
+  if(st==='green'){ rl.className='relance'; rl.innerHTML='<span class="sub">—</span>'; }
+  else { rl.className=row.dataset.origrelancecls; rl.innerHTML=row.dataset.origrelance; }
+}
+function bindPiece(piece){
+  const dot=piece.querySelector('.pdot'), pd=piece.querySelector('.pd');
+  piece.dataset.origdot=[...dot.classList].find(c=>c!=='pdot')||'green';
+  piece.dataset.origpd=pd.textContent;
+  piece.title='Mode Manuel requis pour valider / dévalider';
+  piece.addEventListener('click',()=>{
+    if(!piece.closest('.detail').classList.contains('manual')) return; // en automatique, c'est l'OCR/le système qui valide
+    if(piece.dataset.validated==='1'){
+      dot.className='pdot '+piece.dataset.origdot; pd.textContent=piece.dataset.origpd; piece.dataset.validated='0';
+      const tk=piece.querySelector('.tick'); if(tk) tk.remove();
+    } else {
+      dot.className='pdot green'; pd.textContent='validée'; piece.dataset.validated='1';
+      piece.classList.remove('validating'); void piece.offsetWidth; piece.classList.add('validating');
+      if(!piece.querySelector('.tick')){ const t=document.createElement('span'); t.className='tick'; t.textContent='✓'; piece.appendChild(t); requestAnimationFrame(()=>t.classList.add('show')); }
+    }
+    recomputeRow(piece.closest('.detail'));
+  });
+}
+document.querySelectorAll('.piece').forEach(bindPiece);
+
+/* ---- création / édition de prestataire ---- */
+const modal=document.getElementById('modal'), presForm=document.getElementById('presForm');
+const modalTitle=document.getElementById('modalTitle'), modalKicker=document.getElementById('modalKicker');
+let editTarget=null;
+const fval=n=>{const el=presForm.elements[n];return el?el.value.trim():'';};
+const fset=(n,v)=>{const el=presForm.elements[n];if(el)el.value=v||'';};
+const siteSelect=presForm.elements['siteselect'], sitesMulti=document.getElementById('sitesMulti');
+const SINGLE_SITES=['Chalon','Dijon','Le Creusot','Sur site entreprise'];
+if(siteSelect) siteSelect.addEventListener('change',()=>{ sitesMulti.hidden = siteSelect.value!=='Plusieurs centres'; });
+const sitesVal=()=>{
+  if(siteSelect && siteSelect.value==='Plusieurs centres'){
+    const arr=[...presForm.querySelectorAll('input[name="sites"]:checked')].map(c=>c.value);
+    return arr.length?arr.join(', '):'Plusieurs centres';
+  }
+  return siteSelect?siteSelect.value:'';
+};
+const sitesSet=v=>{
+  v=String(v||'').trim();
+  const parts=v.split(',').map(s=>s.trim()).filter(Boolean);
+  const multi = parts.length>1 || v==='Plusieurs centres';
+  if(multi){
+    siteSelect.value='Plusieurs centres'; sitesMulti.hidden=false;
+    const set=new Set(parts);
+    presForm.querySelectorAll('input[name="sites"]').forEach(c=>c.checked=set.has(c.value));
+  } else {
+    siteSelect.value = SINGLE_SITES.includes(v)? v : '';
+    sitesMulti.hidden=true;
+    presForm.querySelectorAll('input[name="sites"]').forEach(c=>c.checked=false);
+  }
+};
+const composeCo=d=>[d.forme,d.specialite].filter(Boolean).join(' · ')+(d.ville?` — ${d.ville}`:'');
+const tarifTxt=d=>d.tarif?`${d.tarif} €/${d.base==='Journalier'?'j':'h'} ${d.httc}`.trim():'—';
+const pieceHTML=(name,note)=>`<div class="piece"><span class="pdot red"></span><span class="pn">${name}</span><span class="pd">${note}</span></div>`;
+
+function makeRow(d){
+  const tmp=document.createElement('div');
+  tmp.innerHTML=
+   `<div class="row" data-row data-status="red">
+      <div class="who-cell"><span class="status-dot red"></span><div style="min-width:0"><div class="nm">${d.prenom} ${d.nom}</div><div class="co">${composeCo(d)}</div></div></div>
+      <div class="relance"><span class="auto"><span class="spark"></span>Auto · niveau 1</span><br><span class="sub">onboarding en cours</span></div>
+      <div><span class="badge red">Non conforme</span></div>
+      <div class="chev">›</div>
+    </div>
+    <div class="detail"><div class="inner"><div class="pad">
+      <div class="pieces">${pieceHTML('Attestation de vigilance','à fournir')}${pieceHTML('Attestation RC Pro','à fournir')}${pieceHTML('Kbis / SIRENE','à fournir')}${pieceHTML('Copie CNI','à fournir')}</div>
+      <div class="side">
+        <div class="blk"><div class="bt">Prochaine échéance</div><div class="echline"><span class="k">Toutes pièces</span><br>à fournir</div></div>
+        <div class="blk"><div class="bt">Relances automatiques</div><ul class="timeline"><li class="next"><span class="td"></span>Niveau 1 — programmée</li></ul></div>
+        <div class="blk"><div class="bt">Tarification</div><div class="finline"><span>Tarif</span><b>${tarifTxt(d)}</b></div></div>
+        <div class="blk"><div class="bt">Contact</div><div class="cline">${d.email||'—'}</div><div class="cline">${d.tel||'—'}${d.ville?(' · '+d.ville):''}</div><div class="cline">SIRET <span class="tnum">${d.siret||'à compléter'}</span></div></div>
+      </div>
+      <div class="actions"><span class="auto-note"><span class="spark"></span>Nouveau prestataire — relances automatiques actives</span><button class="btn gold">Dossier de preuve</button></div>
+    </div></div></div>`;
+  return {row:tmp.children[0], detail:tmp.children[1]};
+}
+function addEditBtn(row){
+  const actions=row.nextElementSibling.querySelector('.actions'); if(!actions||actions.querySelector('[data-edit]'))return;
+  const b=document.createElement('button'); b.className='btn ghost'; b.setAttribute('data-edit',''); b.textContent='Éditer la fiche';
+  b.addEventListener('click',e=>{e.stopPropagation();openEdit(row);});
+  actions.appendChild(b);
+}
+function readCard(row){
+  if(row._card) return row._card;
+  const nm=row.querySelector('.nm').textContent.trim(), co=row.querySelector('.co').textContent.trim();
+  const [prenom,...rest]=nm.split(' ');
+  const cp=co.split(' · '); const forme=cp[0]||''; let specialite='',ville='';
+  if(cp[1]){const s=cp[1].split(' — ');specialite=s[0]||'';ville=s[1]||'';}
+  const detail=row.nextElementSibling; let tarif='',base='Horaire',httc='HT';
+  const tb=detail.querySelector('.finline b'); if(tb){const m=tb.textContent.match(/(\d+)\s*€\/(h|j)\s*(HT|TTC)/i); if(m){tarif=m[1];base=m[2].toLowerCase()==='j'?'Journalier':'Horaire';httc=m[3].toUpperCase();}}
+  const cl=[...detail.querySelectorAll('.cline')]; let email='',tel='',siret='';
+  if(cl[0]) email=cl[0].textContent.trim();
+  if(cl[1]) tel=(cl[1].textContent.split('·')[0]||'').trim();
+  const stn=detail.querySelector('.cline .tnum'); if(stn) siret=stn.textContent.trim();
+  return {prenom,nom:rest.join(' '),societe:'',forme,specialite,ville,cp:'',sites:'',email,tel,siret,tarif,base,httc,_sites:''};
+}
+function openCreate(){editTarget=null;modalTitle.textContent='Nouveau prestataire';modalKicker.textContent='Onboarding';presForm.reset();sitesMulti.hidden=true;modal.hidden=false;setTimeout(()=>presForm.elements.prenom.focus(),60);}
+function openEdit(row){editTarget=row;modalTitle.textContent='Modifier la fiche';modalKicker.textContent='Édition';const d=readCard(row);Object.keys(d).forEach(k=>{if(k[0]!=='_'&&k!=='sites')fset(k,d[k]);});sitesSet(d.sites);modal.hidden=false;setTimeout(()=>presForm.elements.prenom.focus(),60);}
+function closeModal(){modal.hidden=true;}
+document.getElementById('btnNew').addEventListener('click',openCreate);
+document.getElementById('modalCancel').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeModal();});
+presForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const d={prenom:fval('prenom'),nom:fval('nom'),societe:fval('societe'),forme:fval('forme'),siret:fval('siret'),specialite:fval('specialite'),email:fval('email'),tel:fval('tel'),cp:fval('cp'),ville:fval('ville'),sites:sitesVal(),tarif:fval('tarif'),base:fval('base'),httc:fval('httc')};
+  if(editTarget){
+    editTarget._card=d;
+    editTarget.querySelector('.nm').textContent=`${d.prenom} ${d.nom}`.trim();
+    editTarget.querySelector('.co').textContent=composeCo(d);
+    const detail=editTarget.nextElementSibling;
+    const tb=detail.querySelector('.finline b'); if(tb) tb.textContent=tarifTxt(d);
+    const cl=[...detail.querySelectorAll('.cline')];
+    if(cl[0]) cl[0].textContent=d.email||'—';
+    if(cl[1]) cl[1].textContent=(d.tel||'—')+(d.ville?(' · '+d.ville):'');
+    const stn=detail.querySelector('.cline .tnum'); if(stn) stn.textContent=d.siret||'à compléter';
+  } else {
+    const {row,detail}=makeRow(d); row._card=d; row.dataset.sites=d.sites||'';
+    const list=document.getElementById('list'), head=list.querySelector('.row-head');
+    list.insertBefore(row, head.nextSibling); list.insertBefore(detail, row.nextSibling);
+    const rl=row.querySelector('.relance'); row.dataset.origrelance=rl.innerHTML; row.dataset.origrelancecls=rl.className;
+    bindAccordion(row); detail.querySelectorAll('.piece').forEach(bindPiece); addEditBtn(row); addModeToggle(detail);
+    const k=document.querySelector('.kpi.red .num'); if(k) k.textContent=(parseInt(k.textContent||'0',10)+1);
+    current=null; query=''; searchEl.value=''; kpis.forEach(x=>{x.classList.remove('active');x.style.borderColor='';}); flag.classList.remove('show'); renderRows();
+    row.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+  }
+  closeModal();
+});
+document.querySelectorAll('[data-row]').forEach(row=>{ addEditBtn(row); addModeToggle(row.nextElementSibling); });
+
+/* onglets Registre / Data */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+  const isData=t.dataset.tab==='data';
+  if(isData) toRetards(); else fromRetards();
+  document.getElementById('panel-registre').hidden=isData;
+  document.getElementById('panel-data').hidden=!isData;
+}));
+
+/* Data — retards chroniques : on RELOCALISE les vraies fiches du registre ici.
+   Mêmes nœuds DOM (mêmes données / état / interactions) → synchro totale, zéro duplication. */
+const LATE=[
+  {name:'Julien Mercier', meta:'7 relances · 2 escalades / 12 mois', sug:'Accompagnement recommandé'},
+  {name:'Claire Fontaine', meta:'5 relances · 1 escalade / 12 mois', sug:'Point de cadrage'},
+  {name:'Nadia Brunet', meta:'angle mort · jamais déposé', sug:'Onboarding prioritaire'},
+];
+let movedRows=[];
+function toRetards(){
+  const retards=document.getElementById('retards'); if(!retards) return;
+  retards.innerHTML='<div class="row-head"><div>Prestataire</div><div>Relance</div><div>Statut</div><div></div></div>';
+  movedRows=[];
+  LATE.forEach(L=>{
+    const row=[...document.querySelectorAll('#list [data-row]')].find(r=>r.querySelector('.nm').textContent.trim()===L.name);
+    if(!row) return;
+    const detail=row.nextElementSibling;
+    const ph=document.createElement('div'); ph.className='row-ph'; ph.style.display='none'; row.parentNode.insertBefore(ph,row);
+    const ctx=document.createElement('div'); ctx.className='retard-ctx';
+    ctx.innerHTML='<span class="met">'+L.meta+'</span><span class="sug">'+L.sug+'</span>';
+    retards.appendChild(ctx); retards.appendChild(row); retards.appendChild(detail);
+    movedRows.push({row,detail,ph});
+  });
+}
+function fromRetards(){
+  movedRows.forEach(({row,detail,ph})=>{ ph.parentNode.insertBefore(row,ph); ph.parentNode.insertBefore(detail,ph); ph.remove(); });
+  movedRows=[];
+  const retards=document.getElementById('retards'); if(retards) retards.innerHTML='';
+}
+</script>
+</body>
+</html>

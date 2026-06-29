@@ -158,11 +158,12 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .row.open + .detail .pad{opacity:1; transform:none}
 .detail .pad{padding:18px 20px 22px; display:grid; grid-template-columns:1.4fr 1fr; gap:24px}
 .pieces{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; align-content:start}
-.piece{display:flex; align-items:center; gap:12px; padding:11px 13px; background:var(--card); border:1px solid var(--rule); border-radius:var(--r-sm); cursor:default; transition:background .15s var(--ease), border-color .15s var(--ease)}
-.piece .doc-ic{display:inline-grid; place-items:center; width:18px; height:18px; flex:0 0 auto; color:var(--ink-faint)}
-.piece .doc-ic.ok{color:var(--emerald)} .piece .doc-ic.missing{color:var(--red)}
+.piece{display:flex; align-items:center; gap:13px; padding:7px 2px; cursor:default}
+.piece .doc-ic{display:inline-grid; place-items:center; width:30px; height:30px; flex:0 0 auto; color:var(--ink-faint)}
+.piece .doc-ic.green{color:var(--emerald)} .piece .doc-ic.amber{color:var(--amber)} .piece .doc-ic.red{color:var(--red)}
+.piece.miss .doc-ic{opacity:.5}
 .piece.openable{cursor:pointer}
-.piece.openable:hover{background:var(--card-hi); border-color:var(--rule-strong)}
+.piece.openable:hover .pn{text-decoration:underline; text-decoration-color:var(--rule-strong); text-underline-offset:3px}
 .pc-validate{display:none; flex:0 0 auto; font-family:var(--sans); font-size:11px; font-weight:600; color:var(--ink-soft); background:var(--card); border:1px solid var(--rule-strong); border-radius:7px; padding:4px 10px; cursor:pointer; transition:background .15s var(--ease)}
 .pc-validate:hover{background:var(--paper-2)}
 .detail.manual .pc-validate{display:inline-flex}
@@ -826,11 +827,12 @@ function recomputeRow(detail){
   if(st==='green'){ rl.className='relance'; rl.innerHTML='<span class="sub">—</span>'; }
   else { rl.className=row.dataset.origrelancecls; rl.innerHTML=row.dataset.origrelance; }
 }
-const DOC_SVG='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h5M9 17h5"/></svg>';
+const DOC_SVG='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h5M9 17h5"/></svg>';
 const isMissing=t=>/à fournir|manquant|non transmis/i.test(t);
 function setDocIc(piece){
-  const ic=piece.querySelector('.doc-ic'), miss=piece.classList.contains('miss');
-  ic.classList.toggle('missing',miss); ic.classList.toggle('ok',!miss);
+  const ic=piece.querySelector('.doc-ic'), pd=piece.querySelector('.pd');
+  const cls=['green','amber','red'].find(c=>pd.classList.contains(c))||'';
+  ic.className='doc-ic'+(cls?' '+cls:'');
 }
 function bindPiece(piece){
   const pd=piece.querySelector('.pd'), miss=isMissing(pd.textContent);

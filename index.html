@@ -44,7 +44,7 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .wrap{max-width:1140px; margin:0 auto; padding:0 34px 90px}
 
 /* topbar */
-.topbar{display:flex; align-items:center; justify-content:space-between; padding:22px 0 8px}
+.topbar{display:flex; align-items:center; justify-content:flex-end; padding:22px 0 8px}
 .brand{display:flex; align-items:center; gap:11px}
 .brand .mark{display:grid; place-items:center}
 .brand .mark svg{display:block}
@@ -55,6 +55,9 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 
 /* masthead démesuré */
 .masthead{padding:14px 0 30px}
+.masthead .title-line{display:flex; align-items:center; gap:16px}
+.masthead .mark{display:grid; place-items:center; flex:0 0 auto}
+.masthead .mark svg{display:block}
 .masthead .kicker{margin-top:14px}
 .kicker span{font-family:var(--mono); font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--navy); background:var(--rose); padding:5px 10px 4px; border-radius:3px}
 .bigtitle{font-family:var(--title); font-weight:600; font-optical-sizing:auto; color:var(--ink); font-size:clamp(40px,5.2vw,62px); line-height:1.03; letter-spacing:-.5px}
@@ -296,10 +299,6 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 <div class="wrap">
 
   <div class="topbar">
-    <div class="brand">
-      <span class="mark"><svg viewBox="0 0 200 200" width="30" height="30" aria-hidden="true"><g transform="rotate(-12 100 100)"><path d="M100,30 C140,38 168,76 158,120 C148,160 110,172 86,160 C62,148 50,118 56,90 C62,60 80,30 100,30 Z" fill="#1e2b4a"/></g></svg></span>
-      <span class="wordmark">Conformité<span class="dot">.</span></span>
-    </div>
     <div class="topright">
       <div class="who"><span>Malika Bensaïd</span><div class="av">MB</div></div>
       <img class="uimm" src="assets/uimm-logo-bw.png" alt="UIMM — La Fabrique de l'Avenir">
@@ -307,7 +306,10 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
   </div>
 
   <header class="masthead">
-    <h1 class="bigtitle">Conformité &amp; registre prestataire</h1>
+    <div class="title-line">
+      <span class="mark"><svg viewBox="0 0 200 200" width="52" height="52" aria-hidden="true"><g transform="rotate(-12 100 100)"><path d="M100,30 C140,38 168,76 158,120 C148,160 110,172 86,160 C62,148 50,118 56,90 C62,60 80,30 100,30 Z" fill="#1e2b4a"/></g></svg></span>
+      <h1 class="bigtitle">Conformité &amp; registre prestataire</h1>
+    </div>
     <div class="kicker"><span>La fabrique de l'avenir</span></div>
     <div class="sub">UIMM · pilote URSSAF — vue Malika</div>
   </header>

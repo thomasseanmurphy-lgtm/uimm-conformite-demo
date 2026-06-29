@@ -159,8 +159,13 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .detail .pad{padding:18px 20px 22px; display:grid; grid-template-columns:1.4fr 1fr; gap:24px}
 .pieces{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; align-content:start}
 .piece{display:flex; align-items:center; gap:12px; padding:11px 13px; background:var(--card); border:1px solid var(--rule); border-radius:var(--r-sm); cursor:default; transition:background .15s var(--ease), border-color .15s var(--ease)}
-.detail.manual .piece{cursor:pointer}
-.detail.manual .piece:hover{background:var(--card-hi); border-color:var(--rule-strong)}
+.piece .doc-ic{display:inline-grid; place-items:center; width:18px; height:18px; flex:0 0 auto; color:var(--ink-faint)}
+.piece .doc-ic.ok{color:var(--emerald)} .piece .doc-ic.missing{color:var(--red)}
+.piece.openable{cursor:pointer}
+.piece.openable:hover{background:var(--card-hi); border-color:var(--rule-strong)}
+.pc-validate{display:none; flex:0 0 auto; font-family:var(--sans); font-size:11px; font-weight:600; color:var(--ink-soft); background:var(--card); border:1px solid var(--rule-strong); border-radius:7px; padding:4px 10px; cursor:pointer; transition:background .15s var(--ease)}
+.pc-validate:hover{background:var(--paper-2)}
+.detail.manual .pc-validate{display:inline-flex}
 .btn[data-validate]{display:none}
 .fiche-mode{margin-right:auto}
 .fiche-mode button{min-width:88px; font-size:11px; padding:5px 11px}
@@ -230,6 +235,22 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
 .modal-actions{display:flex; justify-content:flex-end; align-items:center; gap:16px; margin-top:22px; padding-top:16px; border-top:1px solid var(--rule)}
 @keyframes mfade{from{opacity:0}to{opacity:1}}
 @keyframes mrise{from{opacity:0; transform:translateY(10px) scale(.99)}to{opacity:1; transform:none}}
+/* aperçu document (faux, démo) */
+.doc-card{width:min(560px,100%)}
+.doc-head{display:flex; justify-content:space-between; align-items:flex-start; gap:16px}
+.doc-kicker{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint)}
+.doc-name{font-family:var(--display); font-weight:400; font-size:24px; letter-spacing:-.4px; color:var(--ink); margin:3px 0 0}
+.doc-x{flex:0 0 auto; width:30px; height:30px; border:1px solid var(--rule); background:var(--card); border-radius:8px; color:var(--ink-soft); cursor:pointer; font-size:14px; line-height:1}
+.doc-x:hover{border-color:var(--rule-strong)}
+.doc-meta{font-size:12.5px; color:var(--ink-faint); margin:8px 0 16px}
+.doc-page{background:#fff; border:1px solid var(--rule); border-radius:9px; box-shadow:var(--shadow-sm); padding:24px 26px}
+.dp-head{display:flex; justify-content:space-between; gap:12px; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; color:var(--ink-faint); border-bottom:1px solid var(--rule); padding-bottom:11px}
+.dp-title{font-family:var(--display); font-weight:400; font-size:21px; color:var(--ink); margin:18px 0 16px}
+.dp-lines{display:grid; gap:9px; margin-bottom:24px}
+.dp-lines span{height:8px; border-radius:3px; background:var(--paper-2)}
+.dp-lines span:nth-child(even){width:90%} .dp-lines span:last-child{width:55%}
+.dp-foot{display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--ink-faint); border-top:1px solid var(--rule); padding-top:13px}
+.dp-stamp{font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; color:var(--emerald); border:1px solid var(--emerald); border-radius:4px; padding:3px 8px}
 @media (max-width:640px){.fgrid{grid-template-columns:1fr 1fr}}
 
 /* onglets Registre / Data */
@@ -636,6 +657,18 @@ h1,h2{font-weight:600; letter-spacing:-.02em; margin:0}
   </div>
 </div>
 
+<div class="modal" id="docModal" hidden>
+  <div class="modal-card doc-card">
+    <div class="doc-head">
+      <div><div class="doc-kicker">Document déposé</div><h3 class="doc-name" id="docName"></h3></div>
+      <button class="doc-x" id="docClose" type="button" aria-label="Fermer">✕</button>
+    </div>
+    <div class="doc-meta" id="docMeta"></div>
+    <div class="doc-page" id="docPage"></div>
+    <div class="modal-actions"><button class="btn ghost" id="docCloseBtn" type="button">Fermer</button></div>
+  </div>
+</div>
+
 <script>
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -793,25 +826,64 @@ function recomputeRow(detail){
   if(st==='green'){ rl.className='relance'; rl.innerHTML='<span class="sub">—</span>'; }
   else { rl.className=row.dataset.origrelancecls; rl.innerHTML=row.dataset.origrelance; }
 }
+const DOC_SVG='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h5M9 17h5"/></svg>';
+const isMissing=t=>/à fournir|manquant|non transmis/i.test(t);
+function setDocIc(piece){
+  const ic=piece.querySelector('.doc-ic'), miss=piece.classList.contains('miss');
+  ic.classList.toggle('missing',miss); ic.classList.toggle('ok',!miss);
+}
 function bindPiece(piece){
-  const pd=piece.querySelector('.pd');
+  const pd=piece.querySelector('.pd'), miss=isMissing(pd.textContent);
+  const ic=document.createElement('span'); ic.className='doc-ic'; ic.innerHTML=DOC_SVG;
+  piece.insertBefore(ic, piece.firstChild);
+  piece.classList.toggle('miss',miss); piece.classList.toggle('openable',!miss); setDocIc(piece);
   piece.dataset.origpdcls=[...pd.classList].find(c=>c!=='pd')||'green';
   piece.dataset.origpd=pd.textContent;
-  piece.title='Mode Manuel requis pour valider / dévalider';
-  piece.addEventListener('click',()=>{
-    if(!piece.closest('.detail').classList.contains('manual')) return; // en automatique, c'est l'OCR/le système qui valide
-    if(piece.dataset.validated==='1'){
-      pd.className='pd '+piece.dataset.origpdcls; pd.textContent=piece.dataset.origpd; piece.dataset.validated='0';
-      const tk=piece.querySelector('.tick'); if(tk) tk.remove();
-    } else {
-      pd.className='pd green'; pd.textContent='validée'; piece.dataset.validated='1';
-      piece.classList.remove('validating'); void piece.offsetWidth; piece.classList.add('validating');
-      if(!piece.querySelector('.tick')){ const t=document.createElement('span'); t.className='tick'; t.textContent='✓'; piece.appendChild(t); requestAnimationFrame(()=>t.classList.add('show')); }
-    }
-    recomputeRow(piece.closest('.detail'));
-  });
+  const vb=document.createElement('button'); vb.type='button'; vb.className='pc-validate'; vb.textContent='✓ Valider';
+  vb.title='Valider la pièce reçue (mode Manuel)';
+  vb.addEventListener('click',e=>{ e.stopPropagation(); toggleValidate(piece); });
+  piece.appendChild(vb);
+  piece.title = miss ? 'Document non transmis' : 'Voir le document';
+  piece.addEventListener('click',()=>{ if(piece.classList.contains('openable')) openDoc(piece.querySelector('.pn').textContent.trim()); });
+}
+function toggleValidate(piece){
+  if(!piece.closest('.detail').classList.contains('manual')) return;
+  const pd=piece.querySelector('.pd'), vb=piece.querySelector('.pc-validate');
+  if(piece.dataset.validated==='1'){
+    pd.className='pd '+piece.dataset.origpdcls; pd.textContent=piece.dataset.origpd; piece.dataset.validated='0';
+    const tk=piece.querySelector('.tick'); if(tk) tk.remove();
+    const miss=isMissing(piece.dataset.origpd);
+    piece.classList.toggle('miss',miss); piece.classList.toggle('openable',!miss); setDocIc(piece);
+    piece.title = miss ? 'Document non transmis' : 'Voir le document'; vb.textContent='✓ Valider';
+  } else {
+    pd.className='pd green'; pd.textContent='validée'; piece.dataset.validated='1';
+    piece.classList.remove('validating'); void piece.offsetWidth; piece.classList.add('validating');
+    if(!piece.querySelector('.tick')){ const t=document.createElement('span'); t.className='tick'; t.textContent='✓'; piece.insertBefore(t, vb); requestAnimationFrame(()=>t.classList.add('show')); }
+    piece.classList.remove('miss'); piece.classList.add('openable'); setDocIc(piece);
+    piece.title='Voir le document'; vb.textContent='Annuler';
+  }
+  recomputeRow(piece.closest('.detail'));
 }
 document.querySelectorAll('.piece').forEach(bindPiece);
+
+/* aperçu document (faux, démo) */
+const docModal=document.getElementById('docModal');
+function openDoc(name){
+  document.getElementById('docName').textContent=name;
+  document.getElementById('docMeta').textContent='PDF · déposé le 12/06/2026 · 1 page · archivé par le Pôle Formation';
+  const ref=(name.replace(/[^A-Za-zÀ-ÿ]/g,'').slice(0,4).toUpperCase()||'DOC')+'-2026';
+  document.getElementById('docPage').innerHTML=
+    '<div class="dp-head"><span>PÔLE FORMATION UIMM · BOURGOGNE 21-71</span><span>RÉF. '+ref+'</span></div>'+
+    '<div class="dp-title">'+name+'</div>'+
+    '<div class="dp-lines"><span></span><span></span><span></span><span></span><span></span><span></span></div>'+
+    '<div class="dp-foot"><span class="dp-stamp">DÉPOSÉ · CONFORME</span><span>Document de démonstration</span></div>';
+  docModal.hidden=false;
+}
+function closeDoc(){docModal.hidden=true;}
+document.getElementById('docClose').addEventListener('click',closeDoc);
+document.getElementById('docCloseBtn').addEventListener('click',closeDoc);
+docModal.addEventListener('click',e=>{if(e.target===docModal)closeDoc();});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!docModal.hidden)closeDoc();});
 
 /* ---- création / édition de prestataire ---- */
 const modal=document.getElementById('modal'), presForm=document.getElementById('presForm');
